@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from typing import List
 import datetime
 
+
 # Create an instance of FastAPI
 app = FastAPI()
 

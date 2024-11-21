@@ -1,8 +1,10 @@
 # database.py
-from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, DateTime
+from sqlalchemy import create_engine, MetaData, Column, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import datetime
+from datetime import timezone
+
 
 DATABASE_URL = "sqlite:///./messages.db"
 
@@ -19,7 +21,7 @@ class Message(Base):
     sender_id = Column(String, index=True)
     recipient_id = Column(String, index=True)
     encrypted_message = Column(String)
-    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+    timestamp = Column(DateTime, default=datetime.datetime.now(timezone.utc))  # Using recommended approach for UTC time
 
 # Create the database tables
 Base.metadata.create_all(bind=engine)
