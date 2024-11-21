@@ -1,5 +1,7 @@
-# Import FastAPI and other required libraries
-from fastapi import FastAPI, HTTPException
+# app.py
+from fastapi import FastAPI, Depends, HTTPException
+from sqlalchemy.orm import Session
+from database import SessionLocal, Message
 from pydantic import BaseModel
 from typing import List
 import datetime
@@ -7,39 +9,50 @@ import datetime
 # Create an instance of FastAPI
 app = FastAPI()
 
+# Dependency to get the database session
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 # Define the Pydantic model for message data
-# This model ensures that the incoming request follows the expected format
-class Message(BaseModel):
-    sender_id: str  # ID of the user sending the message
-    recipient_id: str  # ID of the recipient of the message
-    encrypted_message: str  # The actual message, encrypted
-    timestamp: datetime.datetime  # Timestamp of when the message was sent
-
+class MessageCreate(BaseModel):
+    sender_id: str
+    recipient_id: str
+    encrypted_message: str
+    timestamp: datetime.datetime
 
 # Define the POST endpoint to store messages
-# This endpoint will be used to save messages when a recipient is offline
 @app.post("/messages/")
-async def store_message(message: Message):
+async def store_message(message: MessageCreate, db: Session = Depends(get_db)):
     """
     Store an encrypted message for a recipient.
-    This function simulates saving the message to a database (to be implemented later).
-
-    Parameters:
-    - message: A Message object containing sender_id, recipient_id, encrypted_message, and timestamp.
-
-    Returns:
-    - A success message indicating that the message has been stored.
+    Saves the message in the SQLite database.
     """
-    # Placeholder for database storage logic
-    print(f"Storing message: {message}")
+    db_message = Message(
+        sender_id=message.sender_id,
+        recipient_id=message.recipient_id,
+        encrypted_message=message.encrypted_message,
+        timestamp=message.timestamp
+    )
+    db.add(db_message)
+    db.commit()
+    db.refresh(db_message)
     return {"message": "Message stored successfully"}
 
-
 # Define the GET endpoint to retrieve messages for a recipient
-# This endpoint will be used when a recipient comes online and wants to retrieve stored messages
-@app.get("/messages/{recipient_id}", response_model=List[Message])
-async def get_messages(recipient_id: str):
+@app.get("/messages/{recipient_id}", response_model=List[MessageCreate])
+async def get_messages(recipient_id: str, db: Session = Depends(get_db)):
+    """
+    Retrieve all messages for a specific recipient.
+    Fetches messages from the SQLite database. If no messages are found, an HTTP 404 response is returned to indicate that no messages were found for the given recipient.
+    """
+    messages = db.query(Message).filter(Message.recipient_id == recipient_id).all()
+    if not messages:
+        raise HTTPException(status_code=404, detail="No messages found for the recipient.")
+    return messages
     """
     Retrieve all messages for a specific recipient.
     This function simulates fetching messages from a database (to be implemented later).
@@ -50,6 +63,7 @@ async def get_messages(recipient_id: str):
     Returns:
     - A list of messages addressed to the recipient.
     """
+
     # Placeholder for database retrieval logic
     messages = []  # This should be replaced by actual database calls
     print(f"Retrieving messages for recipient: {recipient_id}")
