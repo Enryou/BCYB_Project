@@ -1,19 +1,19 @@
-# Use the official Python 3.10 image as the base image
+# Dockerfile
 FROM python:3.10-slim
 
-# Set the working directory in the container
+# Set the working directory
 WORKDIR /app
 
-# Copy the requirements.txt first, to leverage Docker caching
+# Copy the requirements file into the container
 COPY requirements.txt .
 
-# Install dependencies
+# Install the required Python packages
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application code to the working directory
+# Copy the entire project into the container
 COPY . .
 
-# Expose the port FastAPI will run on
+# Expose port 8000 for the FastAPI app
 EXPOSE 8000
 
 # Command to run the application
