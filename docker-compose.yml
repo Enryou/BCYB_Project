@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  fastapi_app:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres_db
+    environment:
+      - DATABASE_URL=postgresql://postgres_user:password@postgres_db:5432/message_db
+
+  postgres_db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres_user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: message_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
