@@ -8,35 +8,33 @@ from typing import List
 import datetime
 from passlib.hash import bcrypt
 
-# Use lifespan event handlers to connect and disconnect from the database
-from contextlib import asynccontextmanager
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
+# Database connection lifecycle using lifespan event handlers
+async def startup():
     # Connect to the database when app starts
     await database.connect()
-    yield
+
+
+async def shutdown():
     # Disconnect from the database when app shuts down
     await database.disconnect()
 
 
-# Create an instance of FastAPI with the lifespan handler
-app = FastAPI(lifespan=lifespan)
+# Create an instance of FastAPI
+app = FastAPI(on_startup=[startup], on_shutdown=[shutdown])
 
 
-# Define Pydantic models for the data being sent to the API
-# This helps validate incoming data and ensures it matches our expected format
+# Pydantic models for request validation and data representation
 class MessageCreate(BaseModel):
-    sender_id: str  # ID of the sender
-    recipient_id: str  # ID of the recipient
-    encrypted_message: str  # Encrypted content of the message
-    timestamp: datetime.datetime  # Timestamp of when the message was sent
+    sender_id: str
+    recipient_id: str
+    encrypted_message: str
+    timestamp: datetime.datetime
 
 
 class UserRegister(BaseModel):
-    username: str  # Username for the user
-    password: str  # Password for the user
+    username: str
+    password: str
 
 
 # Endpoint to register new users
@@ -108,5 +106,4 @@ async def get_messages(recipient_id: str, db: Session = Depends(get_session)):
 # Notes:
 # - The POST endpoint (/messages/) is used to store encrypted messages when the recipient is offline.
 # - The GET endpoint (/messages/{recipient_id}) is used to retrieve stored messages when the recipient comes online.
-# - Using a lifespan handler for the database ensures that the connection is managed properly across the application's lifecycle.
-
+# - Using startup and shutdown event handlers for the database ensures that the connection is managed properly across the application's lifecycle.
