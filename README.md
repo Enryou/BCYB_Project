@@ -10,9 +10,10 @@ This project is a secure, peer-to-peer encrypted messaging system built with Pyt
 - **Persistent Data**: Encrypted user data and messages are stored locally and on the server.
 
 ## Prerequisites
-
+- Only for Linux at the moment
 - Python 3.8+
 - SQLite (for local database management)
+- Kitty terminal
 
 ## Installation
 
@@ -27,13 +28,9 @@ git clone https://github.com/Enryou/BCYB_Project.git
    python -m venv venv
    ```
 2. Activate the virtual environment:
-   - **Linux/Mac**:
+   - **Linux**:
      ```bash
      source venv/bin/activate
-     ```
-   - **Windows**:
-     ```bash
-     venv\Scripts\activate
      ```
 
 3. Install dependencies:
