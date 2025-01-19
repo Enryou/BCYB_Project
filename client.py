@@ -12,12 +12,16 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.backends import default_backend
 import base64
 
+# Base URL for the server
 BASE_URL = "http://127.0.0.1:8000"
+
+# Global variables to store login state and user data
 login_state = False
 current_user = None
 current_password = None
 current_secret_key = None
 
+# Helper functions
 def get_user_dir(username):
     return os.path.join(os.getcwd(), username)
 
@@ -31,6 +35,7 @@ def derive_key(password, salt):
     )
     return base64.urlsafe_b64encode(kdf.derive(password.encode()))
 
+# Encryption and decryption functions
 def encrypt_key_with_password(secret_key, password):
     salt = os.urandom(16)
     key = derive_key(password, salt)
@@ -54,6 +59,7 @@ def decrypt_data(data, key):
     fernet = Fernet(key)
     return fernet.decrypt(data).decode()
 
+# Key generation and storage functions
 def generate_key_pair():
     private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     public_key = private_key.public_key()
@@ -91,12 +97,18 @@ def load_account_data(username, password):
     return secret_key
 
 def save_messages_data(chat_partner, messages, username, secret_key):
+    """
+    Save encrypted messages data to a file.
+    """
     user_dir = get_user_dir(username)
     encrypted_data = encrypt_data(json.dumps(messages), secret_key)
     with open(os.path.join(user_dir, f"{chat_partner}_messages.json"), "wb") as data_file:
         data_file.write(encrypted_data)
 
 def load_messages_data(chat_partner, username, secret_key):
+    """
+    Load and decrypt messages data from a file.
+    """
     user_dir = get_user_dir(username)
     file_path = os.path.join(user_dir, f"{chat_partner}_messages.json")
     if not os.path.exists(file_path):
@@ -106,7 +118,11 @@ def load_messages_data(chat_partner, username, secret_key):
     decrypted_data = decrypt_data(encrypted_data, secret_key)
     return json.loads(decrypted_data)
 
+#
 def validate_password(password):
+    """
+    Validate the password using specific criteria.
+    """
     schema = PasswordValidator()
     schema \
         .min(8) \
@@ -118,6 +134,9 @@ def validate_password(password):
     return schema.validate(password)
 
 def register():
+    """
+    Register a new user by providing a username and password.
+    """
     username = input("Enter username: ")
     password = getpass.getpass("Enter password: ")
     if not validate_password(password):
@@ -138,6 +157,9 @@ def register():
         print(response.json().get("message", "Registration failed"))
 
 def login():
+    """
+    Log in an existing user by providing a username and password.
+    """
     global login_state, current_user, current_password, current_secret_key
     username = input("Enter username: ")
     password = getpass.getpass("Enter password: ")
@@ -154,6 +176,9 @@ def login():
 
 
 def send_message():
+    """
+    Send an encrypted message to another user.
+    """
     if not login_state:
         print("You must be logged in to send messages.")
         return
@@ -197,6 +222,9 @@ def send_message():
         print("Failed to retrieve recipient's public key")
 
 def get_messages():
+    """
+    Retrieve new messages from the server.
+    """
     if not login_state:
         print("You must be logged in to get messages.")
         return
@@ -234,6 +262,9 @@ def get_messages():
         print(f"{msg['timestamp']} - {msg['sender']}: {decrypted_message}")
 
 def view_past_messages():
+    """
+    View past messages with a specific chat partner.
+    """
     chat_partner = input("Enter chat partner's username to view past messages: ")
     messages = load_messages_data(chat_partner, current_user, current_secret_key)
     if not messages:
@@ -243,6 +274,9 @@ def view_past_messages():
         print(f"{msg['timestamp']} - {msg['sender']}: {msg['message']}")
 
 def logout():
+    """
+    Log out the current user.
+    """
     global login_state, current_user, current_password, current_secret_key
     login_state = False
     current_user = None
@@ -251,6 +285,9 @@ def logout():
     print("Logged out successfully")
 
 def login_menu():
+    """
+    Display the login menu and handle user input.
+    """
     while True:
         print("\n1. Register\n2. Login\n3. Exit")
         choice = input("Choose an option: ")
@@ -266,6 +303,9 @@ def login_menu():
             print("Invalid choice. Try again.")
 
 def user_menu():
+    """
+    Display the user menu and handle user input.
+    """
     while login_state:
         print("\n1. Send Message\n2. Get Messages\n3. View Past Messages\n4. Logout")
         choice = input("Choose an option: ")
@@ -281,6 +321,9 @@ def user_menu():
             print("Invalid choice. Try again.")
 
 def main():
+    """
+    Main function to start the application.
+    """
     login_menu()
 
 if __name__ == "__main__":
