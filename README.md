@@ -28,10 +28,9 @@ git clone https://github.com/Enryou/BCYB_Project.git
    python -m venv venv
    ```
 2. Activate the virtual environment:
-   - **Linux**:
-     ```bash
-     source venv/bin/activate
-     ```
+   ```bash
+   source venv/bin/activate
+   ```
 
 3. Install dependencies:
    ```bash
