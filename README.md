@@ -18,8 +18,7 @@ This project is a secure, peer-to-peer encrypted messaging system built with Pyt
 
 ### Clone the Repository
 ```bash
-git clone <repository-url>
-cd <repository-directory>
+git clone https://github.com/Enryou/BCYB_Project.git
 ```
 
 ### Set Up the Python Environment
