@@ -13,7 +13,6 @@ This project is a secure, peer-to-peer encrypted messaging system built with Pyt
 - Only for Linux at the moment
 - Python 3.8+
 - SQLite (for local database management)
-- Kitty terminal
 
 ## Installation
 
